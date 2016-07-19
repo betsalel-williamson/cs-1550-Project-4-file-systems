@@ -1,0 +1,14 @@
+# idea files
+.idea/
+
+# misc files
+_build/
+*.log
+*config.txt
+*(Autosaved)*
+*~*
+*.xlsx
+*.docx
+
+# os X files
+.DS_Store

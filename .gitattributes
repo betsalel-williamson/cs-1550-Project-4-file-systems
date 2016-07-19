@@ -1,0 +1,7 @@
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.c text
+*.h text
+
+*.tcl text eol=lf
+CMakeLists.txt text eol=lf
