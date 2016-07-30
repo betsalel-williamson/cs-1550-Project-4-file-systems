@@ -49,38 +49,37 @@ proc cf_write {fname args} {
   close $fd
 }
 
-proc clean_build {} {
-  exec rm -rf _build\ config.txt
-}
+#proc clean_build {} {
+#  exec rm -rf _build\ config.txt
+#}
 
-proc clean_logs {} {
-  exec rm -rf config.log test.log _build\build.log
-}
+#proc clean_logs {} {
+#  exec rm -rf config.log test.log _build\build.log
+#}
 
 # could be used to pass clean argument to delete the build folder need to improve the handling of the switch case
-if { $::argc > 0 } {
-    set i 1
-    foreach arg $::argv {
-        puts "argument $i is $arg"
-        switch $arg {
-           -c {
-              # then I should delete the config file and the build directory
-              puts "Cleaning up build files"
-              clean_build
-           }
-           -l {
-              puts "Cleaning up logs"
-              clean_logs
-           }
-           default {
-              puts "Nothing found. Ingoring flag."
-           }
-        }
-        incr i
-    }
-} else {
-    puts "No command line argument passed."
-}
+#if { $::argc > 0 } {
+#    set i 1
+#    foreach arg $::argv {
+#        puts "argument $i is $arg"
+#        switch $arg {
+#           -c {
+#              # then I should delete the config file and the build directory
+#              puts "Cleaning up build files"
+#           }
+#           -l {
+#              puts "Cleaning up logs"
+#              clean_logs
+#           }
+#           default {
+#              puts "Nothing found. Ingoring flag."
+#           }
+#        }
+#        incr i
+#    }
+#} else {
+#    puts "No command line argument passed."
+#}
 
 set cfile [file join [file dir [info script]] config.txt]
 
