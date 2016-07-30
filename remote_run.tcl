@@ -26,26 +26,45 @@
 # * SOFTWARE.
 # */
 
+## note that the project must already exist on the remote server for this to run
+
+## passwords are stored on local computer and outside the project directory to protect information
+## TODO: switch to alternate method of password storage and retreval using SSH keys
+
 source common.tcl
 source $SECRET_FILE
 
-set src_location [lindex $argv 0];
-set dest_location [lindex $argv 1];
-
 set timeout 20
 
-set ip "thoth.cs.pitt.edu"
+set server "thoth"
+set ip "$server.cs.pitt.edu"
 
-spawn scp $src_location "$user@$ip:$dest_location"
-expect "password:" {send "$pass\r" }
+# upload the files to the server
+spawn ./upload.tcl cs1550.c /u/OSLab/bhw7/fuse-2.7.0/example
+spawn ./upload.tcl test.tcl /u/OSLab/bhw7/fuse-2.7.0/example
+spawn ./upload.tcl close.tcl /u/OSLab/bhw7/fuse-2.7.0/example
+
+#spawn sh -c {osascript -e "tell application \"Terminal\"" -e "tell application \"System Events\" to keystroke \"t\" using {command down}" -e "do script \"cd $PWD; clear\" in front window" -e "end tell" > /dev/null}
+
+#set mainWindow $spawn_id
+#
+#expect \
+#    "school" { send "ssh \"$user@$ip\"\r" }
 
 spawn ssh "$user@$ip"
 
-expect "password:" {send "$pass\r" }
+expect \
+    "password:" { send "$pass\r" }
 
-expect "thoth" {send "cd $dest_location\r"}
+expect \
+    "$server" { send "cd /u/OSLab/bhw7/fuse-2.7.0/example\r" }
 
-expect "thoth" {send "cd ls\r"}
+expect \
+    "$server" { send "make\r" }
 
-expect "thoth" {send "exit\r"}
+expect \
+    "$server" { send "./cs1550 -d $directory\r" }
+
+interact
+
 
