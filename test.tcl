@@ -26,7 +26,7 @@
 # * SOFTWARE.
 # */
 
-source [file join [file join [file dirname [info script]] tests] tests.tcl]
+source [file join [file dirname [info script]] tests.tcl]
 
 ## note that the project must already exist on the remote server for this to run
 set directory a
@@ -58,35 +58,49 @@ if { $::argc > 0 } {
 
 #if {$clean_build} {
 
-    if { [catch {set result [exec rm .disk]} reason] } {
-
-    puts "Failed execution: $reason"
-
-    } else {
-
-    puts $result
-
-    }
-
-    if { [catch {set result [exec dd bs=1K count=5K if=/dev/zero of=.disk]} reason] } {
-
-    puts "Failed execution: $reason"
-
-    } else {
-
-    puts $result
-
-    }
-
+#proc clean_disk {} {
+#    if { [catch {set result [exec rm .disk]} reason] } {
+#
+#    puts "Failed exec rm .disk:\n$reason"
+#    exit -1
+#
+#    } else {
+#
+#    puts $result
+#
+#    }
+#
+#    if { [catch {set result [exec dd bs=1K count=5K if=/dev/zero of=.disk]} reason] } {
+#
+#    puts "Failed exec dd bs=1K count=5K if=/dev/zero of=.disk:\n$reason"
+#    exit -2
+#
+#    } else {
+#
+#    puts $result
+#
+#    }
+#}
 #} else {
 #    puts "\nUsing old disk.\n"
 #}
 
+puts "create_directories test\n"
+clean_disk
 # general create directory tests
-#create_directories{$directory}
+create_directories $directory $server
+puts "\n****************************************\n"
 
+puts "max_length test\n"
+clean_disk
 # max length test
-#max_length{$directory}
+max_length $directory $server
+puts "\n****************************************\n"
 
+puts "create_files test\n"
+clean_disk
 # create file test
-create_files{$directory}
+create_files $directory $server
+puts "\n****************************************\n"
+
+interact

@@ -1,6 +1,6 @@
 #! /usr/bin/env expect
 
-proc create_files{directory} {
+proc create_files {directory server} {
 
     cd $directory
 
@@ -129,4 +129,6 @@ proc create_files{directory} {
     puts $result
 
     }
+
+    cd {..}
 }

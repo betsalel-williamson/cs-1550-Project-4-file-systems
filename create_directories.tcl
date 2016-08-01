@@ -1,0 +1,38 @@
+#! /usr/bin/env expect
+
+proc create_directories {directory server} {
+
+    cd $directory
+
+    set test_args {{mkdir {f}}
+        {mkdir {f0}}
+        {mkdir {f00}}
+        {mkdir {f000}}
+        {mkdir {f0000}}
+        {mkdir {f00000}}
+        {mkdir {f000000}}
+        {mkdir {f0000000}}
+        {mkdir {f0000000}}
+        {mkdir {f00000000}}
+        {ls}
+    }
+
+    foreach test $test_args {
+        puts "Executing: $test"
+
+        expect "" { send "$test\r" }
+
+        if { [catch {set result [exec {*}[eval list $test]]} reason] } {
+
+        puts "Failed execution: $reason"
+
+        } else {
+
+        puts $result
+
+        }
+    }
+
+    cd {..}
+
+}
