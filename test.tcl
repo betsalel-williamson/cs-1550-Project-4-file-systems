@@ -26,6 +26,8 @@
 # * SOFTWARE.
 # */
 
+source [file join [file join [file dirname [info script]] tests] tests.tcl]
+
 ## note that the project must already exist on the remote server for this to run
 set directory a
 set server "thoth"
@@ -80,189 +82,11 @@ if { $::argc > 0 } {
 #    puts "\nUsing old disk.\n"
 #}
 
-
-cd $directory
-
-# genearl create directory tests
-#set test_args {{mkdir "f"}
-#    {mkdir "f0"}
-#    {mkdir "f00"}
-#    {mkdir "f000"}
-#    {mkdir "f0000"}
-#    {mkdir "f00000"}
-#    {mkdir "f000000"}
-#    {mkdir "f0000000"}
-#    {mkdir "f0000000"}
-#    {mkdir "f00000000"}
-#    {ls}
-#}
-#foreach test $test_args {
-#    puts "Executing: $test"
-#
-#    expect \
-#        "$server" { send "$test\r" }
-#
-#    if { [catch {set result [exec ]} reason] } {
-#
-#    puts "Failed execution: $reason"
-#
-#    } else {
-#
-#    puts $result
-#
-#    }
-#}
+# general create directory tests
+#create_directories{$directory}
 
 # max length test
-#set test_args {{mkdir "f0000000"}
-#    {mkdir "f00000000"}
-#    {ls}
-#}
-#
-#foreach test $test_args {
-#    puts "Executing: $test"
-#
-#    expect \
-#        "$server" { send "$test\r" }
-#
-#    if { [catch {set result [exec ]} reason] } {
-#
-#    puts "Failed execution: $reason"
-#
-#    } else {
-#
-#    puts $result
-#
-#    }
-#}
+#max_length{$directory}
 
 # create file test
-
-if { [catch {set result [exec {*}[eval list {mkdir "f000"}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-if { [catch {set result [exec {*}[eval list {ls}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-cd "f000"
-
-if { [catch {set result [exec {*}[eval list {echo a > a.txt}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-if { [catch {set result [exec {*}[eval list {ls}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-if { [catch {set result [exec {*}[eval list {echo b > b.txt}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-if { [catch {set result [exec {*}[eval list {ls}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-cd ".."
-
-if { [catch {set result [exec {*}[eval list {mkdir "foo"}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-if { [catch {set result [exec {*}[eval list {ls}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-cd "foo"
-
-if { [catch {set result [exec {*}[eval list {echo a > a.txt}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-if { [catch {set result [exec {*}[eval list {ls}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-if { [catch {set result [exec {*}[eval list {echo b > b.txt}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-if { [catch {set result [exec {*}[eval list {ls}]]} reason] } {
-
-puts "Failed execution: $reason"
-
-} else {
-
-puts $result
-
-}
-
-#spawn sh
-
+create_files{$directory}
