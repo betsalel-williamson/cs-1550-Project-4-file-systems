@@ -26,7 +26,7 @@
 # * SOFTWARE.
 # */
 
-source [file join [file join [file dirname [info script]] tests] tests.tcl]
+source [file join [file dirname [info script]] tests.tcl]
 
 ## note that the project must already exist on the remote server for this to run
 set directory a

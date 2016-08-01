@@ -42,10 +42,10 @@ set ip "$server.cs.pitt.edu"
 # upload the files to the server
 spawn ./upload.tcl cs1550.c /u/OSLab/bhw7/fuse-2.7.0/example
 spawn ./upload.tcl test.tcl /u/OSLab/bhw7/fuse-2.7.0/example
-spawn ./upload.tcl tests/create_directories.tcl /u/OSLab/bhw7/fuse-2.7.0/example/tests
-spawn ./upload.tcl tests/create_files.tcl /u/OSLab/bhw7/fuse-2.7.0/example/tests
-spawn ./upload.tcl tests/max_length.tcl /u/OSLab/bhw7/fuse-2.7.0/example/tests
-spawn ./upload.tcl tests/tests.tcl /u/OSLab/bhw7/fuse-2.7.0/example/tests
+spawn ./upload.tcl create_directories.tcl /u/OSLab/bhw7/fuse-2.7.0/example
+spawn ./upload.tcl create_files.tcl /u/OSLab/bhw7/fuse-2.7.0/example
+spawn ./upload.tcl max_length.tcl /u/OSLab/bhw7/fuse-2.7.0/example
+spawn ./upload.tcl tests.tcl /u/OSLab/bhw7/fuse-2.7.0/example
 spawn ./upload.tcl close.tcl /u/OSLab/bhw7/fuse-2.7.0/example
 
 #spawn sh -c {osascript -e "tell application \"Terminal\"" -e "tell application \"System Events\" to keystroke \"t\" using {command down}" -e "do script \"cd $PWD; clear\" in front window" -e "end tell" > /dev/null}

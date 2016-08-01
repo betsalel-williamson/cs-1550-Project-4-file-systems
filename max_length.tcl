@@ -1,18 +1,10 @@
 #! /usr/bin/env expect
 
-proc create_directories{directory} {
+proc create_files {directory} {
 
     cd $directory
 
-    set test_args {{mkdir "f"}
-        {mkdir "f0"}
-        {mkdir "f00"}
-        {mkdir "f000"}
-        {mkdir "f0000"}
-        {mkdir "f00000"}
-        {mkdir "f000000"}
-        {mkdir "f0000000"}
-        {mkdir "f0000000"}
+    set test_args {{mkdir "f0000000"}
         {mkdir "f00000000"}
         {ls}
     }
