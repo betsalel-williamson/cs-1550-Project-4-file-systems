@@ -167,7 +167,7 @@ void trim_path(const char *src, char *dest) {
     dest[str_length - 1] = '\0';
 }
 
-int write_to_disk(cs1550_disk * disk);
+int write_to_disk(cs1550_disk *disk);
 
 /**
  *
@@ -238,7 +238,7 @@ struct Singleton *get_instance(void) {
     } else {
         print_debug(("Accessed non-null instance\n"));
 
-        if(dirty == true) {
+        if (dirty == true) {
             print_debug(("!! ** Disk is dirty ** !!\nWriting out before read.\n"));
             write_to_disk(instance->d);
             dirty = false;
@@ -801,7 +801,6 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
     }
 
     print_debug(("Before returning result\n"));
-
     return result;
 }
 
@@ -883,8 +882,13 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
             }
         }
 
-        if (!found_dir){
-            cs1550_mkdir(path, NULL);
+        if (!found_dir) {
+            int mkdir_result = cs1550_mkdir(path, (void *) NULL);
+            print_debug(("Result of mkdir: %d", mkdir_result));
+
+            if (mkdir_result != 0) {
+                result = -EPERM;
+            }
         }
     }
 
