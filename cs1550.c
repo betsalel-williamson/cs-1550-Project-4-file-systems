@@ -164,7 +164,7 @@ void trim_path(const char *src, char *dest) {
     dest[str_length - 1] = '\0';
 }
 
-int write_to_disk(void);
+int write_to_disk(cs1550_disk * disk);
 
 /**
  *
@@ -189,7 +189,7 @@ struct Singleton *get_instance(void) {
             exit(-EBADF);
 
         fread(instance->d, sizeof(struct cs1550_disk), 1, filePtr);
-        print_debug(("Closed disk\n"));
+        print_debug(("Closed disk create instance\n"));
         fclose(filePtr);
 
         // todo: implement variable size disk
@@ -223,7 +223,7 @@ struct Singleton *get_instance(void) {
         set_bit_map(0, sizeof(struct cs1550_root_directory), 1, instance->d->bitmap);
 //        print_bit_map(0, sizeof(struct cs1550_root_directory), instance->d->bitmap);
 
-        write_to_disk();
+        write_to_disk(instance->d);
 
     } else {
         print_debug(("Accessed non-null instance\n"));
@@ -234,7 +234,7 @@ struct Singleton *get_instance(void) {
             exit(-EBADF);
 
         fread(instance->d, sizeof(struct cs1550_disk), 1, filePtr);
-        print_debug(("Closed disk\n"));
+        print_debug(("Closed disk access instance\n"));
         fclose(filePtr);
     }
 
@@ -277,14 +277,15 @@ void print_bit_map(int offset, int length, char *bitmap) {
 
 long get_free_block(void);
 
-int write_to_disk(void) {
+int write_to_disk(cs1550_disk *disk) {
+
     print_debug(("Opening disk for write\n"));
     FILE *filePtr = fopen(".disk", "rb+");
     if (filePtr == NULL)
         return -EBADF;
 
-    fwrite(get_instance()->d, sizeof(struct cs1550_disk), 1, filePtr); //write struct to file
-    print_debug(("Closed disk\n"));
+    fwrite(disk, sizeof(struct cs1550_disk), 1, filePtr); //write struct to file
+    print_debug(("Closed disk after write\n"));
     fclose(filePtr);
 
     return EXIT_SUCCESS;
@@ -779,7 +780,7 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
 
         bitmapFileHeader->nDirectories++;
 
-        write_to_disk();
+        write_to_disk(disk);
     }
 
     print_debug(("Before returning result\n"));
@@ -894,7 +895,7 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
         entry->files[m].nStartBlock = get_free_block();
         set_bit_map((int) entry->files[m].nStartBlock, (int) entry->files[m].fsize, 1, disk->bitmap);
 
-        write_to_disk();
+        write_to_disk(disk);
     }
 
     (void) mode;
