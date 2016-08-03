@@ -356,7 +356,7 @@ int get_path_info_for_mknod(const char *path, char **dir_name, char **full_file_
         }
     }
     // we have tried to create a file in a subdirectory of a subdirectory
-    if (slash_count < 2) {
+    if (slash_count > 2) {
         result = -EPERM;
     }
 
@@ -859,12 +859,15 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
 
     if (result == 0) {
         // go to the directory
+        int found_dir = false;
         int l;
         for (l = 0; l < bitmapFileHeader->nDirectories; ++l) {
             print_debug(("I'm testing this directory %s\n", dir_name));
             print_debug(("Against this directory %s\n", bitmapFileHeader->directories[l].dname));
 
             if (strcmp(bitmapFileHeader->directories[l].dname, dir_name) == 0) {
+                // i found the directory
+                found_dir = true;
 
                 // get the cs1550_directory_entry
                 entry = (cs1550_directory_entry *) &disk->blocks[bitmapFileHeader->directories[l].nStartBlock];
@@ -878,6 +881,11 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
                 }
                 break;
             }
+        }
+
+        if (!found_dir){
+
+            cs1550_mkdir(, NULL);
         }
     }
 
