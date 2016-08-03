@@ -960,6 +960,8 @@ static int cs1550_unlink(const char *path) {
  */
 static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
                        struct fuse_file_info *fi) {
+    print_debug(("I'm in read: size = %ld offset = %d\npath = %s\nbuffer = %s\n", size, offset, path, buf));
+
 ////    This function should read the data in the file denoted by path into buf, starting at offset.
 //    (void) buf;
 //    (void) offset;
@@ -999,6 +1001,8 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
  */
 static int cs1550_write(const char *path, const char *buf, size_t size,
                         off_t offset, struct fuse_file_info *fi) {
+    print_debug(("I'm in write: size = %ld offset = %d\npath = %s\nbuffer = %s\n", size, offset, path, buf));
+
 ////    This function should write the data in buf into the file denoted by path, starting at offset.
 //    (void) buf;
 //    (void) offset;
