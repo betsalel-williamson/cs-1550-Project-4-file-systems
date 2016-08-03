@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 //#include <string.h>
 //#include <pthread.h>
 //#include <tclDecls.h>
@@ -959,21 +960,35 @@ static int cs1550_unlink(const char *path) {
  */
 static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
                        struct fuse_file_info *fi) {
-//    This function should read the data in the file denoted by path into buf, starting at offset.
-    (void) buf;
-    (void) offset;
+////    This function should read the data in the file denoted by path into buf, starting at offset.
+//    (void) buf;
+//    (void) offset;
+//    (void) fi;
+//    (void) path;
+//
+//    //check to make sure path exists
+//    //check that size is > 0
+//    //check that offset is <= to the file size
+//    //read in data
+//    //set size and return, or error
+//
+//    size = 0;
+//
+//    return (int) size;
+    int fd;
+    int res;
+
     (void) fi;
-    (void) path;
+    fd = open(path, O_RDONLY);
+    if (fd == -1)
+        return -errno;
 
-    //check to make sure path exists
-    //check that size is > 0
-    //check that offset is <= to the file size
-    //read in data
-    //set size and return, or error
+    res = (int) pread(fd, buf, size, offset);
+    if (res == -1)
+        res = -errno;
 
-    size = 0;
-
-    return (int) size;
+    close(fd);
+    return res;
 }
 
 /*
@@ -984,19 +999,33 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
  */
 static int cs1550_write(const char *path, const char *buf, size_t size,
                         off_t offset, struct fuse_file_info *fi) {
-//    This function should write the data in buf into the file denoted by path, starting at offset.
-    (void) buf;
-    (void) offset;
+////    This function should write the data in buf into the file denoted by path, starting at offset.
+//    (void) buf;
+//    (void) offset;
+//    (void) fi;
+//    (void) path;
+//
+//    //check to make sure path exists
+//    //check that size is > 0
+//    //check that offset is <= to the file size
+//    //write data
+//    //set size (should be same as input) and return, or error
+//
+//    return (int) size;
+    int fd;
+    int res;
+
     (void) fi;
-    (void) path;
+    fd = open(path, O_WRONLY);
+    if (fd == -1)
+        return -errno;
 
-    //check to make sure path exists
-    //check that size is > 0
-    //check that offset is <= to the file size
-    //write data
-    //set size (should be same as input) and return, or error
+    res = (int) pwrite(fd, buf, size, offset);
+    if (res == -1)
+        res = -errno;
 
-    return (int) size;
+    close(fd);
+    return res;
 }
 
 /******************************************************************************
