@@ -469,11 +469,13 @@ static int cs1550_getattr(const char *path, struct stat *stbuf) {
     cs1550_disk *disk = get_instance()->d;
     struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
 
+    // this will contain all of the information about the disk
     //our bitmap file header
 
     //is path the root dir?
     if (strcmp(path, "/") == 0) {
         print_debug(("In get_path_info_for_getattr for root\n"));
+        print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
 
         stbuf->st_mode = S_IFDIR | 0755;
         stbuf->st_nlink = 2;
@@ -713,7 +715,7 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
     // start at one before the '\0'
     for (i = (int) str_length - 1; i >= 0; --i) {
 //        print_debug(("Found '%c'\n", path[i]));
-
+        // if name is too long
         if (letter_count > 8) {
             result = -ENAMETOOLONG;
             break;
@@ -735,7 +737,6 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
     // if directory is not under the root directory
     // this means that the path information is off
 
-    // if name is too long
 
     if (result == 0) {
 
@@ -884,7 +885,7 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
 
         if (!found_dir) {
             int mkdir_result = cs1550_mkdir(path, (void *) NULL);
-            print_debug(("Result of mkdir: %d", mkdir_result));
+            print_debug(("Result of mkdir: %d\n", mkdir_result));
 
             if (mkdir_result != 0) {
                 result = -EPERM;
