@@ -183,6 +183,15 @@ struct Singleton *get_instance(void) {
         print_debug(("Calloc instance\n"));
         instance->d = (cs1550_disk *) calloc(1, sizeof(struct cs1550_disk));
 
+        print_debug(("Opening disk for read\n"));
+        FILE *filePtr = fopen(".disk", "rb");
+        if (filePtr == NULL)
+            exit(-EBADF);
+
+        fread(instance->d, sizeof(struct cs1550_disk), 1, filePtr);
+        print_debug(("Closed disk\n"));
+        fclose(filePtr);
+
         // todo: implement variable size disk
 //        // get disk size
 //        struct stat st;
@@ -218,6 +227,15 @@ struct Singleton *get_instance(void) {
 
     } else {
         print_debug(("Accessed non-null instance\n"));
+
+        print_debug(("Opening disk for read\n"));
+        FILE *filePtr = fopen(".disk", "rb");
+        if (filePtr == NULL)
+            exit(-EBADF);
+
+        fread(instance->d, sizeof(struct cs1550_disk), 1, filePtr);
+        print_debug(("Closed disk\n"));
+        fclose(filePtr);
     }
 
 //    pthread_mutex_unlock(&instance_mutex);
@@ -431,16 +449,8 @@ static int cs1550_getattr(const char *path, struct stat *stbuf) {
 
     memset(stbuf, 0, sizeof(struct stat));
 
-    print_debug(("Opening disk for read\n"));
-    FILE *filePtr = fopen(".disk", "rb");
-    if (filePtr == NULL)
-        return -EBADF;
-
     cs1550_disk *disk = get_instance()->d;
-    fread(disk, sizeof(struct cs1550_disk), 1, filePtr);
     struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
-    print_debug(("Closed disk\n"));
-    fclose(filePtr);
 
     //our bitmap file header
 
@@ -580,17 +590,8 @@ static int cs1550_readdir(const char *path,
 
     get_path_info_for_getattr(path, &dir_name, &full_file_name, &file_name, &extension_name);
 
-    print_debug(("Opening disk for read\n"));
-    FILE *filePtr = fopen(".disk", "rb");
-    if (filePtr == NULL)
-        return -EBADF;
-
     cs1550_disk *disk = get_instance()->d;
-    fread(disk, sizeof(struct cs1550_disk), 1, filePtr);
     struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
-
-    print_debug(("Closed disk\n"));
-    fclose(filePtr);
 
     // this will contain all of the information about the disk
     print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
@@ -729,21 +730,9 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
         file_name[str_length - 1] = '\0';
         print_debug(("file_name %s\n", file_name));
 
-        // rb+
-        // open in binary mode for writing
-        print_debug(("Opening disk for read\n"));
-        FILE *filePtr = fopen(".disk", "rb");
-        if (filePtr == NULL)
-            return -EBADF;
-
         cs1550_disk *disk = get_instance()->d;
-        fread(disk, sizeof(struct cs1550_disk), 1, filePtr);
-        print_debug(("Closed disk\n"));
-//        filePtr = NULL;
-
         struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
 
-        fclose(filePtr);
 
         // if the directory exists
         int j;
@@ -840,23 +829,18 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
     // attempt to create file
     cs1550_directory_entry *entry = NULL;
     cs1550_disk *disk = get_instance()->d;
+    struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
+    print_debug(("Loaded header\n"));
 
     int m = 0;
 
+    if (strcmp(path, "/") == 0) {
+
+        result = -EPERM;
+    }
+
     if (result == 0) {
         // go to the directory
-        print_debug(("Opening disk for read\n"));
-        FILE *filePtr = fopen(".disk", "rb");
-        if (filePtr == NULL)
-            return -EBADF;
-
-        fread(disk, sizeof(struct cs1550_disk), 1, filePtr);
-        print_debug(("Closed disk\n"));
-        fclose(filePtr);
-
-        struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
-
-        print_debug(("Loaded header\n"));
         int l;
         for (l = 0; l < bitmapFileHeader->nDirectories; ++l) {
             print_debug(("I'm testing this directory %s\n", dir_name));
