@@ -884,8 +884,7 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
         }
 
         if (!found_dir){
-
-            cs1550_mkdir(, NULL);
+            cs1550_mkdir(path, NULL);
         }
     }
 
