@@ -44,7 +44,7 @@ proc create_files {directory} {
 
     }
 
-    cd "f000"
+    cd f000
 
     if { [catch {set result [exec {*}[eval list {echo a > a.txt}]]} reason] } {
 

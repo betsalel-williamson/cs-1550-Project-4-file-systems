@@ -239,6 +239,7 @@ struct Singleton *get_instance(void) {
         print_debug(("Accessed non-null instance\n"));
 
         if(dirty == true) {
+            print_debug(("!! ** Disk is dirty ** !!\nWriting out before read.\n"));
             write_to_disk(instance->d);
             dirty = false;
         }
