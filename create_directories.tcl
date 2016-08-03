@@ -31,6 +31,9 @@ proc create_directories {directory} {
         }
     }
 
+# should return error
+    puts "\nExecuting: make subdir 'f0' in dir 'f00'\n"
+
     cd "f00"
 
     if { [catch {set result [exec {*}[eval list {mkdir "f0"}]]} reason] } {
@@ -42,5 +45,17 @@ proc create_directories {directory} {
     puts $result
 
     }
+
+    if { [catch {set result [exec {*}[eval list {ls}]]} reason] } {
+
+    puts "Failed execution: $reason"
+
+    } else {
+
+    puts $result
+
+    }
+
+    cd {..}
 
 }
