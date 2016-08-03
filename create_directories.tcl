@@ -34,4 +34,16 @@ proc create_directories {directory} {
         }
     }
 
+        cd "f00"
+
+        if { [catch {set result [exec {*}[eval list {mkdir "f0"}]]} reason] } {
+
+        puts "Failed execution: $reason"
+
+        } else {
+
+        puts $result
+
+        }
+
 }

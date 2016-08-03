@@ -58,29 +58,29 @@ if { $::argc > 0 } {
 
 #if {$clean_build} {
 
-#proc clean_disk {} {
-#    if { [catch {set result [exec rm .disk]} reason] } {
-#
-#    puts "Failed exec rm .disk:\n$reason"
+proc clean_disk {} {
+    if { [catch {set result [exec rm .disk]} reason] } {
+
+    puts "Failed exec rm .disk:\n$reason"
 #    exit -1
-#
-#    } else {
-#
-#    puts $result
-#
-#    }
-#
-#    if { [catch {set result [exec dd bs=1K count=5K if=/dev/zero of=.disk]} reason] } {
-#
-#    puts "Failed exec dd bs=1K count=5K if=/dev/zero of=.disk:\n$reason"
+
+    } else {
+
+    puts $result
+
+    }
+
+    if { [catch {set result [exec dd bs=1K count=5K if=/dev/zero of=.disk]} reason] } {
+
+    puts "Failed exec dd bs=1K count=5K if=/dev/zero of=.disk:\n$reason"
 #    exit -2
-#
-#    } else {
-#
-#    puts $result
-#
-#    }
-#}
+
+    } else {
+
+    puts $result
+
+    }
+}
 #} else {
 #    puts "\nUsing old disk.\n"
 #}
