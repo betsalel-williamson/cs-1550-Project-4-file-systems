@@ -903,12 +903,15 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
         }
 
         if (!found_dir) {
-            int mkdir_result = cs1550_mkdir(path, (mode_t) NULL);
-            print_debug(("Result of mkdir: %d\n", mkdir_result));
+            result = -EPERM;
 
-            if (mkdir_result != 0) {
-                result = -EPERM;
-            }
+            // todo: allow user to create directory and file in the same operation
+//            int mkdir_result = cs1550_mkdir(path, (mode_t) NULL);
+//            print_debug(("Result of mkdir: %d\n", mkdir_result));
+//
+//            if (mkdir_result != 0) {
+//                result = -EPERM;
+//            }
         }
     }
 
@@ -1014,14 +1017,11 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
         // need to read from disk
         fd = open(path, O_RDONLY);
         if (fd == -1) {
-            result = -errno;
+            result = -EBADF;
         }
 
         if (result == 0) {
             result = (int) pread(fd, buf, size, offset);
-            if (result == -1) {
-                result = -errno;
-            }
         }
 
         close(fd);
@@ -1040,6 +1040,7 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
     print_debug(("I'm in write: size = %ld offset = %d\npath = %s\nbuffer = %s\n", size, offset, path, buf));
 
     int result = 0;
+
     char *dir_name;
     char *full_file_name;
     char *file_name;
@@ -1061,22 +1062,20 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
 //
 //    return (int) size;
     int fd;
-    int res;
+//    int res;
 
     (void) fi;
     // need to write to .disk
     fd = open(path, O_WRONLY);
     if (fd == -1) {
-        return -errno;
+        return -EBADF;
     }
 
-    res = (int) pwrite(fd, buf, size, offset);
-    if (res == -1) {
-        res = -errno;
-    }
+    result = (int) pwrite(fd, buf, size, offset);
 
     close(fd);
-    return res;
+
+    return result;
 }
 
 /******************************************************************************
