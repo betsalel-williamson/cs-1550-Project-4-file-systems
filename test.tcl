@@ -26,8 +26,11 @@
 # * SOFTWARE.
 # */
 
+source [file join [file dirname [info script]] tests.tcl]
+
 ## note that the project must already exist on the remote server for this to run
 set directory a
+set server "thoth"
 
 # could be used to pass clean argument to delete the build folder need to improve the handling of the switch case
 set clean_build 0
@@ -55,62 +58,49 @@ if { $::argc > 0 } {
 
 #if {$clean_build} {
 
-    if { [catch {set result [exec rm .disk]} reason] } {
-
-    puts "Failed execution: $reason"
-
-    } else {
-
-    puts $result
-
-    }
-
-    if { [catch {set result [exec dd bs=1K count=5K if=/dev/zero of=.disk]} reason] } {
-
-    puts "Failed execution: $reason"
-
-    } else {
-
-    puts $result
-
-    }
-
+#proc clean_disk {} {
+#    if { [catch {set result [exec rm .disk]} reason] } {
+#
+#    puts "Failed exec rm .disk:\n$reason"
+#    exit -1
+#
+#    } else {
+#
+#    puts $result
+#
+#    }
+#
+#    if { [catch {set result [exec dd bs=1K count=5K if=/dev/zero of=.disk]} reason] } {
+#
+#    puts "Failed exec dd bs=1K count=5K if=/dev/zero of=.disk:\n$reason"
+#    exit -2
+#
+#    } else {
+#
+#    puts $result
+#
+#    }
+#}
 #} else {
 #    puts "\nUsing old disk.\n"
 #}
 
+puts "create_directories test\n"
+clean_disk
+# general create directory tests
+create_directories $directory $server
+puts "\n****************************************\n"
 
-cd $directory
-
-set test_args {{mkdir "f"}
-    {mkdir "f0"}
-    {mkdir "f00"}
-    {mkdir "f000"}
-    {mkdir "f0000"}
-    {mkdir "f00000"}
-    {mkdir "f000000"}
-    {mkdir "f0000000"}
-    {mkdir "f0000000"}
-    {mkdir "f00000000"}
-    {ls}
-}
-
+puts "max_length test\n"
+clean_disk
 # max length test
-#set test_args {{mkdir "f0000000"}
-#    {mkdir "f00000000"}
-#    {ls}
-#}
+max_length $directory $server
+puts "\n****************************************\n"
 
-foreach test $test_args {
-    puts "Executing: $test"
+puts "create_files test\n"
+clean_disk
+# create file test
+create_files $directory $server
+puts "\n****************************************\n"
 
-    if { [catch {set result [exec {*}[eval list $test]]} reason] } {
-
-    puts "Failed execution: $reason"
-
-    } else {
-
-    puts $result
-
-    }
-}
+interact
