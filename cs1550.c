@@ -195,8 +195,9 @@ struct Singleton *get_instance(void) {
 
         print_debug(("Opening disk for read\n"));
         FILE *filePtr = fopen(".disk", "rb");
-        if (filePtr == NULL)
+        if (filePtr == NULL) {
             exit(-EBADF);
+        }
 
         fread(instance->d, sizeof(struct cs1550_disk), 1, filePtr);
         print_debug(("Closed disk create instance\n"));
@@ -247,8 +248,9 @@ struct Singleton *get_instance(void) {
 
         print_debug(("Opening disk for read\n"));
         FILE *filePtr = fopen(".disk", "rb");
-        if (filePtr == NULL)
+        if (filePtr == NULL) {
             exit(-EBADF);
+        }
 
         fread(instance->d, sizeof(struct cs1550_disk), 1, filePtr);
         print_debug(("Closed disk access instance\n"));
@@ -298,8 +300,9 @@ int write_to_disk(cs1550_disk *disk) {
 
     print_debug(("Opening disk for write\n"));
     FILE *filePtr = fopen(".disk", "rb+");
-    if (filePtr == NULL)
+    if (filePtr == NULL) {
         return -EBADF;
+    }
 
     fwrite(disk, sizeof(struct cs1550_disk), 1, filePtr); //write struct to file
     print_debug(("Closed disk after write\n"));
@@ -962,6 +965,18 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
                        struct fuse_file_info *fi) {
     print_debug(("I'm in read: size = %ld offset = %d\npath = %s\nbuffer = %s\n", size, offset, path, buf));
 
+    int result = 0;
+    char *dir_name;
+    char *full_file_name;
+    char *file_name;
+    char *extension_name;
+
+    get_path_info_for_getattr(path, &dir_name, &full_file_name, &file_name, &extension_name);
+
+    if (strlen(full_file_name) == 0) {
+        result = -EISDIR;
+    }
+
 ////    This function should read the data in the file denoted by path into buf, starting at offset.
 //    (void) buf;
 //    (void) offset;
@@ -977,20 +992,26 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
 //    size = 0;
 //
 //    return (int) size;
-    int fd;
-    int res;
+    if (result == 0) {
+        int fd;
+        (void) fi;
 
-    (void) fi;
-    fd = open(path, O_RDONLY);
-    if (fd == -1)
-        return -errno;
+        // need to read from disk
+        fd = open(path, O_RDONLY);
+        if (fd == -1) {
+            result = -errno;
+        }
 
-    res = (int) pread(fd, buf, size, offset);
-    if (res == -1)
-        res = -errno;
+        if (result == 0) {
+            result = (int) pread(fd, buf, size, offset);
+            if (result == -1) {
+                result = -errno;
+            }
+        }
 
-    close(fd);
-    return res;
+        close(fd);
+    }
+    return result;
 }
 
 /*
@@ -1002,6 +1023,14 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
 static int cs1550_write(const char *path, const char *buf, size_t size,
                         off_t offset, struct fuse_file_info *fi) {
     print_debug(("I'm in write: size = %ld offset = %d\npath = %s\nbuffer = %s\n", size, offset, path, buf));
+
+    int result = 0;
+    char *dir_name;
+    char *full_file_name;
+    char *file_name;
+    char *extension_name;
+
+    get_path_info_for_getattr(path, &dir_name, &full_file_name, &file_name, &extension_name);
 
 ////    This function should write the data in buf into the file denoted by path, starting at offset.
 //    (void) buf;
@@ -1020,13 +1049,16 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
     int res;
 
     (void) fi;
+    // need to write to .disk
     fd = open(path, O_WRONLY);
-    if (fd == -1)
+    if (fd == -1) {
         return -errno;
+    }
 
     res = (int) pwrite(fd, buf, size, offset);
-    if (res == -1)
+    if (res == -1) {
         res = -errno;
+    }
 
     close(fd);
     return res;
