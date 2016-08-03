@@ -472,6 +472,7 @@ static int cs1550_getattr(const char *path, struct stat *stbuf) {
 
     cs1550_disk *disk = get_instance()->d;
     struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
+    print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
 
     // this will contain all of the information about the disk
     //our bitmap file header
@@ -506,6 +507,7 @@ static int cs1550_getattr(const char *path, struct stat *stbuf) {
             // if the directory exists
             int i;
             for (i = 0; i < bitmapFileHeader->nDirectories; ++i) {
+                print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
                 print_debug(
                         ("bitmap %s dir_name %s result %d\n", bitmapFileHeader->directories[i].dname, dir_name, strcmp(
                                 bitmapFileHeader->directories[i].dname, dir_name)));
@@ -525,6 +527,7 @@ static int cs1550_getattr(const char *path, struct stat *stbuf) {
 
             int i;
             for (i = 0; i < bitmapFileHeader->nDirectories; ++i) {
+                print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
                 print_debug(
                         ("bitmap %s dir_name %s result %d\n", bitmapFileHeader->directories[i].dname, dir_name, strcmp(
                                 bitmapFileHeader->directories[i].dname, dir_name)));
@@ -615,9 +618,9 @@ static int cs1550_readdir(const char *path,
 
     cs1550_disk *disk = get_instance()->d;
     struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
+    print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
 
     // this will contain all of the information about the disk
-    print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
 
     filler(buf, ".", NULL, 0);
     filler(buf, "..", NULL, 0);
@@ -626,6 +629,8 @@ static int cs1550_readdir(const char *path,
         // todo: need to work on this because it is reading all directories. I just want the current directory
         int i;
         for (i = 0; i < bitmapFileHeader->nDirectories; ++i) {
+            print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
+
 //            print_debug(("directory name %s\n", bitmapFileHeader->directories[i].dname));
 //            print_debug(("nStartBlock %ld\n", bitmapFileHeader->directories[i].nStartBlock));
             filler(buf, bitmapFileHeader->directories[i].dname, NULL, 0);
@@ -635,6 +640,7 @@ static int cs1550_readdir(const char *path,
         // this assumes that there are no sub-directories
         int i;
         for (i = 0; i < bitmapFileHeader->nDirectories; ++i) {
+            print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
 
 //            filler(buf, bitmapFileHeader->directories[i].dname, NULL, 0);
 
@@ -758,6 +764,8 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
         // if the directory exists
         int j;
         for (j = 0; j < bitmapFileHeader->nDirectories; ++j) {
+            print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
+
             if (strcmp(bitmapFileHeader->directories[j].dname, file_name) == 0) {
                 result = -EEXIST;
                 break;
@@ -772,6 +780,8 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
             // we are adding a new directory therefor we can write directly to the end
 //            print_debug(("file_name %s\n", file_name));
             strcpy(bitmapFileHeader->directories[bitmapFileHeader->nDirectories].dname, file_name);
+            print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
+
 //            print_debug(("dname %s\n", bitmapFileHeader->directories[bitmapFileHeader->nDirectories].dname));
 
 //            print_debug(("nStartBlock %ld\n", bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock));
@@ -779,6 +789,8 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
             long start_block = get_free_block();
 
             bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock = start_block;
+            print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
+
 
 //            print_debug(("Setting bitmap\n"));
             set_bit_map((int) start_block, sizeof(struct cs1550_directory_entry), 1, disk->bitmap);
@@ -790,6 +802,8 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
             //        print_debug(("Setting address %ld\n", bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock));
 
             long address = bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock;
+            print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
+
             cs1550_directory_entry *new_entry = (cs1550_directory_entry *) &disk->blocks[address];
 
             new_entry->nFiles = 0;
@@ -799,6 +813,7 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
             // then after the root there was a size of 512
 
             bitmapFileHeader->nDirectories++;
+            print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
 
             write_to_disk(disk);
             dirty = false;
@@ -853,6 +868,7 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
     cs1550_disk *disk = get_instance()->d;
     struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
     print_debug(("Loaded header\n"));
+    print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
 
     int m = 0;
 
@@ -866,6 +882,8 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
         int found_dir = false;
         int l;
         for (l = 0; l < bitmapFileHeader->nDirectories; ++l) {
+            print_debug(("nDirectories %d\n", bitmapFileHeader->nDirectories));
+
             print_debug(("I'm testing this directory %s\n", dir_name));
             print_debug(("Against this directory %s\n", bitmapFileHeader->directories[l].dname));
 
@@ -888,7 +906,7 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
         }
 
         if (!found_dir) {
-            int mkdir_result = cs1550_mkdir(path, (void *) NULL);
+            int mkdir_result = cs1550_mkdir(path, (mode_t) NULL);
             print_debug(("Result of mkdir: %d\n", mkdir_result));
 
             if (mkdir_result != 0) {
