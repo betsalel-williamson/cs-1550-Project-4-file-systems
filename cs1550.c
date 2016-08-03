@@ -19,6 +19,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdbool.h>
 //#include <string.h>
 //#include <pthread.h>
 //#include <tclDecls.h>
@@ -32,6 +33,8 @@
 #else
 #define print_debug(s) do {} while (0)
 #endif
+
+static int dirty = false;
 
 //size of a disk block
 #define    BLOCK_SIZE 512
@@ -183,6 +186,12 @@ struct Singleton *get_instance(void) {
         print_debug(("Calloc instance\n"));
         instance->d = (cs1550_disk *) calloc(1, sizeof(struct cs1550_disk));
 
+        assert(dirty == false);
+//        if(dirty == true) {
+//            write_to_disk(instance->d);
+//            dirty = ;
+//        }
+
         print_debug(("Opening disk for read\n"));
         FILE *filePtr = fopen(".disk", "rb");
         if (filePtr == NULL)
@@ -228,6 +237,11 @@ struct Singleton *get_instance(void) {
 //        write_to_disk(instance->d);
     } else {
         print_debug(("Accessed non-null instance\n"));
+
+        if(dirty == true) {
+            write_to_disk(instance->d);
+            dirty = false;
+        }
 
         print_debug(("Opening disk for read\n"));
         FILE *filePtr = fopen(".disk", "rb");
@@ -735,7 +749,6 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
         cs1550_disk *disk = get_instance()->d;
         struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
 
-
         // if the directory exists
         int j;
         for (j = 0; j < bitmapFileHeader->nDirectories; ++j) {
@@ -747,6 +760,7 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
 
         // else create directory
         if (result == 0) {
+            dirty = true;
 
             // loop through array
             // we are adding a new directory therefor we can write directly to the end
@@ -766,22 +780,23 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
 //            print_bit_map(0, start_block + sizeof(struct cs1550_directory_entry), disk->bitmap);
 
             // will increment the number of directories
+
+            //        print_debug(("Setting address %ld\n", bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock));
+
+            long address = bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock;
+            cs1550_directory_entry *new_entry = (cs1550_directory_entry *) &disk->blocks[address];
+
+            new_entry->nFiles = 0;
+
+            // this is off. I have a bunch of pointers to memory of size char
+            // if I start at location 0 I have the root
+            // then after the root there was a size of 512
+
+            bitmapFileHeader->nDirectories++;
+
+            write_to_disk(disk);
+            dirty = false;
         }
-
-//        print_debug(("Setting address %ld\n", bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock));
-
-        long address = bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock;
-        cs1550_directory_entry *new_entry = (cs1550_directory_entry *) &disk->blocks[address];
-
-        new_entry->nFiles = 0;
-
-        // this is off. I have a bunch of pointers to memory of size char
-        // if I start at location 0 I have the root
-        // then after the root there was a size of 512
-
-        bitmapFileHeader->nDirectories++;
-
-        write_to_disk(disk);
     }
 
     print_debug(("Before returning result\n"));
@@ -867,6 +882,7 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
 
     // create file;
     if (result == 0) {
+        dirty = true;
         assert(entry != NULL);
 
         print_debug(("Creating file\n"));
@@ -897,6 +913,7 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
         set_bit_map((int) entry->files[m].nStartBlock, (int) entry->files[m].fsize, 1, disk->bitmap);
 
         write_to_disk(disk);
+        dirty = false;
     }
 
     (void) mode;
