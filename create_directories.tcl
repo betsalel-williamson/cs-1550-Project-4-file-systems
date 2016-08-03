@@ -1,6 +1,6 @@
 #! /usr/bin/env expect
 
-proc create_directories {directory} {
+proc create_directories {directory server} {
 
     cd $directory
 
