@@ -217,14 +217,15 @@ struct Singleton *get_instance(void) {
 //        size_t block_size = (size_t) (size - bit_map_size) >> 9;
 //        instance->d->blocks = (cs1550_disk_block *) calloc(1, block_size);
 
-        cs1550_root_directory *root = (cs1550_root_directory *) &instance->d->blocks[0];
-        root->nDirectories = 0;
+        // what if the disk already contains information?
 
-        set_bit_map(0, sizeof(struct cs1550_root_directory), 1, instance->d->bitmap);
+//        cs1550_root_directory *root = (cs1550_root_directory *) &instance->d->blocks[0];
+//
+//        root->nDirectories = 0;
+//        set_bit_map(0, sizeof(struct cs1550_root_directory), 1, instance->d->bitmap);
 //        print_bit_map(0, sizeof(struct cs1550_root_directory), instance->d->bitmap);
 
-        write_to_disk(instance->d);
-
+//        write_to_disk(instance->d);
     } else {
         print_debug(("Accessed non-null instance\n"));
 
