@@ -4,6 +4,26 @@ proc create_files {directory} {
 
     cd $directory
 
+    if { [catch {set result  [exec {*}[eval list {pwd}]]} reason] } {
+
+    puts "Failed execution: $reason"
+
+    } else {
+
+    puts $result
+
+    }
+
+    if { [catch {set result  [exec {*}[eval list {ls}]]} reason] } {
+
+    puts "Failed execution: $reason"
+
+    } else {
+
+    puts $result
+
+    }
+
     if { [catch {set result [exec {*}[eval list {mkdir "f000"}]]} reason] } {
 
     puts "Failed execution: $reason"
