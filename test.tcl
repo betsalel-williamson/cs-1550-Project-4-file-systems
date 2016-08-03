@@ -29,7 +29,7 @@
 source [file join [file dirname [info script]] tests.tcl]
 
 ## note that the project must already exist on the remote server for this to run
-set directory a
+set directory /u/OSLab/bhw7/fuse-2.7.0/example/a
 set server "thoth"
 
 # could be used to pass clean argument to delete the build folder need to improve the handling of the switch case
@@ -59,6 +59,9 @@ if { $::argc > 0 } {
 #if {$clean_build} {
 
 proc clean_disk {} {
+
+    cd /u/OSLab/bhw7/fuse-2.7.0/example/
+
     if { [catch {set result [exec rm .disk]} reason] } {
 
     puts "Failed exec rm .disk:\n$reason"

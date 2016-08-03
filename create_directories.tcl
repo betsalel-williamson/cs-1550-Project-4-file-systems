@@ -58,4 +58,6 @@ proc create_directories {directory} {
 
     cd {..}
 
+    cd {..}
+
 }
