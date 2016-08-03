@@ -294,7 +294,7 @@ void print_bit_map(int offset, int length, char *bitmap) {
     }
 }
 
-long get_free_block(void);
+long get_free_block(char *bitmap);
 
 int write_to_disk(cs1550_disk *disk) {
 
@@ -311,9 +311,9 @@ int write_to_disk(cs1550_disk *disk) {
     return EXIT_SUCCESS;
 }
 
-long get_free_block(void) {
+// could cache results and return things if I update this when I write out information
+long get_free_block(char *bitmap) {
 
-    char *bitmap = get_instance()->d->bitmap;
     int i;
 
     // seek until I find the first free bit
@@ -697,9 +697,6 @@ static int cs1550_readdir(const char *path,
     return 0;
 }
 
-// could cache results and return things if I update this when I write out information
-long get_free_block(void);
-
 /**
  * Creates a directory. We can ignore mode since we're not dealing with
  * permissions, as long as getattr returns appropriate ones for us.
@@ -786,7 +783,7 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
 
 //            print_debug(("nStartBlock %ld\n", bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock));
 
-            long start_block = get_free_block();
+            long start_block = get_free_block(disk->bitmap);
 
             bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock = start_block;
             print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
@@ -939,12 +936,12 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
 
         // todo: get proper file size
 //        entry->files[m].fsize = (size_t) st.st_size;
-//        entry->files[m].nStartBlock = get_free_block();
+//        entry->files[m].nStartBlock = get_free_block(disk->bitmap);
 
         entry->files[m].fsize = (size_t) 5;
         print_debug(("file size of '%s': %ld\n", path, (long) entry->files[m].fsize));
 
-        entry->files[m].nStartBlock = get_free_block();
+        entry->files[m].nStartBlock = get_free_block(disk->bitmap);
         set_bit_map((int) entry->files[m].nStartBlock, (int) entry->files[m].fsize, 1, disk->bitmap);
 
         write_to_disk(disk);
