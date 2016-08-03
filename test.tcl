@@ -88,19 +88,19 @@ proc clean_disk {} {
 puts "create_directories test\n"
 clean_disk
 # general create directory tests
-create_directories $directory $server
+create_directories $directory
 puts "\n****************************************\n"
 
 puts "max_length test\n"
 clean_disk
 # max length test
-max_length $directory $server
+max_length $directory
 puts "\n****************************************\n"
 
 puts "create_files test\n"
 clean_disk
 # create file test
-create_files $directory $server
+create_files $directory
 puts "\n****************************************\n"
 
 interact

@@ -1,6 +1,6 @@
 #! /usr/bin/env expect
 
-proc max_length {directory server} {
+proc max_length {directory} {
 
     cd $directory
 

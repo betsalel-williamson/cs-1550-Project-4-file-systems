@@ -20,10 +20,7 @@ proc create_directories {directory} {
     foreach test $test_args {
         puts "Executing: $test"
 
-        expect \
-            "$server" { send "$test\r" }
-
-        if { [catch {set result [exec ]} reason] } {
+        if { [catch {set result  [exec {*}[eval list $test]]} reason] } {
 
         puts "Failed execution: $reason"
 
@@ -34,16 +31,16 @@ proc create_directories {directory} {
         }
     }
 
-        cd "f00"
+    cd "f00"
 
-        if { [catch {set result [exec {*}[eval list {mkdir "f0"}]]} reason] } {
+    if { [catch {set result [exec {*}[eval list {mkdir "f0"}]]} reason] } {
 
-        puts "Failed execution: $reason"
+    puts "Failed execution: $reason"
 
-        } else {
+    } else {
 
-        puts $result
+    puts $result
 
-        }
+    }
 
 }
