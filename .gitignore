@@ -9,6 +9,45 @@ _build/
 *~*
 *.xlsx
 *.docx
+*.doc
+
+# fuse directory
+fuse-2.7.0/*
+!fuse-2.7.0/doc/
+
+!fuse-2.7.0/example/
+fuse-2.7.0/example/*
+!fuse-2.7.0/example/*.c
+
+!fuse-2.7.0/include/
+fuse-2.7.0/include/*
+!fuse-2.7.0/include/*.h
+!fuse-2.7.0/include/*.c
+!fuse-2.7.0/include/old/
+fuse-2.7.0/include/old/*
+!fuse-2.7.0/include/old/*.h
+!fuse-2.7.0/include/old/*.c
+
+!fuse-2.7.0/kernel/
+fuse-2.7.0/kernel/*
+!fuse-2.7.0/kernel/*.h
+!fuse-2.7.0/kernel/*.c
+
+!fuse-2.7.0/lib/
+fuse-2.7.0/lib/*
+!fuse-2.7.0/lib/*.h
+!fuse-2.7.0/lib/*.c
+!fuse-2.7.0/lib/modules/
+fuse-2.7.0/lib/modules/*
+!fuse-2.7.0/lib/modules/*.c
+
+!fuse-2.7.0/util/
+fuse-2.7.0/util/*
+!fuse-2.7.0/util/*.h
+!fuse-2.7.0/util/*.c
+
+
+CS 1550 – Project 4_ File Systems.html_files/
 
 # os X files
 .DS_Store

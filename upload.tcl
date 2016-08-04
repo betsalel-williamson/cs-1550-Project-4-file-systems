@@ -47,4 +47,5 @@ expect "thoth" {send "cd $dest_location\r"}
 
 expect "thoth" {send "cd ls\r"}
 
-interact
+expect "thoth" {send "exit\r"}
+
