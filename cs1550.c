@@ -1166,7 +1166,7 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
                         }
 
                         if (result == 0) {
-                            result = (int) pwrite(fd, buf, size, offset);
+                            result = (int) pwrite(fd, buf, size, entry->files[m].nStartBlock + offset);
                         }
 
                         close(fd);
