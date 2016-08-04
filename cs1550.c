@@ -1074,6 +1074,10 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
                             print_debug(("buf = %s\n", buf));
                         }
 
+                        if (result == 0) {
+                            result = (int) size;
+                        }
+
                         close(fd);
 
                         break;
