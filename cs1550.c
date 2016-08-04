@@ -820,7 +820,7 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
         }
     }
 
-    print_debug(("Before returning result\n"));
+    print_debug(("Before cs1550_mkdir returning result\n"));
     return result;
 }
 
@@ -882,8 +882,8 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
         for (l = 0; l < bitmapFileHeader->nDirectories; ++l) {
             //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
 
-            print_debug(("I'm testing this directory %s\n", dir_name));
-            print_debug(("Against this directory %s\n", bitmapFileHeader->directories[l].dname));
+//            print_debug(("I'm testing this directory %s\n", dir_name));
+//            print_debug(("Against this directory %s\n", bitmapFileHeader->directories[l].dname));
 
             if (strcmp(bitmapFileHeader->directories[l].dname, dir_name) == 0) {
                 // i found the directory
@@ -921,7 +921,7 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
         dirty = true;
         assert(entry != NULL);
 
-        print_debug(("Creating file\n"));
+        print_debug(("Creating file entry\n"));
         // m is the current position in the directory structure for me to store the file
         // entry is a pointer to the subdirectory
 
@@ -932,10 +932,6 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
 
         strcpy(entry->files[m].fext, extension_name);
         print_debug(("extension_name: %s\n", entry->files[m].fext));
-
-        struct stat st;
-        stat(path, &st);
-        print_debug(("file size of '%s': %ld\n", path, (long) st.st_size));
 
         // get proper file size; note that this seems to be given to the write call
         // will try to do this stuff when I write to the file for the first time.
@@ -977,7 +973,7 @@ static int cs1550_unlink(const char *path) {
  */
 static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
                        struct fuse_file_info *fi) {
-    print_debug(("I'm in read: size = %ld offset = %d\npath = %s\nbuffer = %s\n", size, offset, path, buf));
+    print_debug(("I'm in cs1550_read: size = %ld offset = %d\npath = %s\nbuffer = %s\n", size, offset, path, buf));
 
     int result = 0;
     char *dir_name;
@@ -1079,7 +1075,7 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
  */
 static int cs1550_write(const char *path, const char *buf, size_t size,
                         off_t offset, struct fuse_file_info *fi) {
-    print_debug(("I'm in write: size = %ld offset = %d\npath = %s\nbuffer = %s\n", size, offset, path, buf));
+    print_debug(("I'm in cs1550_write: size = %ld offset = %d\npath = %s\nbuffer = %s\n", size, offset, path, buf));
 
     int result = 0;
 
@@ -1108,7 +1104,7 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
     cs1550_disk *disk = get_instance()->d;
     struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
 
-    print_debug(("In cs1550_read for file\n"));
+    print_debug(("In cs1550_write for file\n"));
 
     int i;
     for (i = 0; i < bitmapFileHeader->nDirectories; ++i) {
