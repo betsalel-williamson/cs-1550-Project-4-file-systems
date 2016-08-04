@@ -24,7 +24,7 @@ proc create_files {directory} {
 
     }
 
-    if { [catch {set result [exec {*}[eval list {mkdir "f000"}]]} reason] } {
+    if { [catch {set result [exec {*}[eval list {mkdir "foo1"}]]} reason] } {
 
     puts "Failed execution: $reason"
 
@@ -44,7 +44,7 @@ proc create_files {directory} {
 
     }
 
-    cd f000
+    cd "foo1"
 
     if { [catch {set result [exec {*}[eval list {echo a > a.txt}]]} reason] } {
 
@@ -110,7 +110,7 @@ proc create_files {directory} {
 
     cd "foo"
 
-    if { [catch {set result [exec {*}[eval list {echo a > a.txt}]]} reason] } {
+    if { [catch {set result [exec {*}[eval list {echo "a" > a.txt}]]} reason] } {
 
     puts "Failed execution: $reason"
 
@@ -130,7 +130,7 @@ proc create_files {directory} {
 
     }
 
-    if { [catch {set result [exec {*}[eval list {echo b > b.txt}]]} reason] } {
+    if { [catch {set result [exec {*}[eval list {echo "b" > b.txt}]]} reason] } {
 
     puts "Failed execution: $reason"
 
