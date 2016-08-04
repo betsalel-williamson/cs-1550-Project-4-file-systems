@@ -29,7 +29,7 @@
 source [file join [file dirname [info script]] tests.tcl]
 
 ## note that the project must already exist on the remote server for this to run
-set directory a
+set directory /u/OSLab/bhw7/fuse-2.7.0/example/a
 set server "thoth"
 
 # could be used to pass clean argument to delete the build folder need to improve the handling of the switch case
@@ -58,29 +58,32 @@ if { $::argc > 0 } {
 
 #if {$clean_build} {
 
-#proc clean_disk {} {
-#    if { [catch {set result [exec rm .disk]} reason] } {
-#
-#    puts "Failed exec rm .disk:\n$reason"
+proc clean_disk {} {
+
+    cd /u/OSLab/bhw7/fuse-2.7.0/example/
+
+    if { [catch {set result [exec rm .disk]} reason] } {
+
+    puts "Failed exec rm .disk:\n$reason"
 #    exit -1
-#
-#    } else {
-#
-#    puts $result
-#
-#    }
-#
-#    if { [catch {set result [exec dd bs=1K count=5K if=/dev/zero of=.disk]} reason] } {
-#
-#    puts "Failed exec dd bs=1K count=5K if=/dev/zero of=.disk:\n$reason"
+
+    } else {
+
+    puts $result
+
+    }
+
+    if { [catch {set result [exec dd bs=1K count=5K if=/dev/zero of=.disk]} reason] } {
+
+    puts "Failed exec dd bs=1K count=5K if=/dev/zero of=.disk:\n$reason"
 #    exit -2
-#
-#    } else {
-#
-#    puts $result
-#
-#    }
-#}
+
+    } else {
+
+    puts $result
+
+    }
+}
 #} else {
 #    puts "\nUsing old disk.\n"
 #}
@@ -88,19 +91,19 @@ if { $::argc > 0 } {
 puts "create_directories test\n"
 clean_disk
 # general create directory tests
-create_directories $directory $server
+create_directories $directory
 puts "\n****************************************\n"
 
 puts "max_length test\n"
 clean_disk
 # max length test
-max_length $directory $server
+max_length $directory
 puts "\n****************************************\n"
 
 puts "create_files test\n"
 clean_disk
 # create file test
-create_files $directory $server
+create_files $directory
 puts "\n****************************************\n"
 
 interact

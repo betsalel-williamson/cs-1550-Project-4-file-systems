@@ -1,8 +1,28 @@
 #! /usr/bin/env expect
 
-proc create_files {directory server} {
+proc create_files {directory} {
 
     cd $directory
+
+    if { [catch {set result  [exec {*}[eval list {pwd}]]} reason] } {
+
+    puts "Failed execution: $reason"
+
+    } else {
+
+    puts $result
+
+    }
+
+    if { [catch {set result  [exec {*}[eval list {ls}]]} reason] } {
+
+    puts "Failed execution: $reason"
+
+    } else {
+
+    puts $result
+
+    }
 
     if { [catch {set result [exec {*}[eval list {mkdir "f000"}]]} reason] } {
 
@@ -24,7 +44,7 @@ proc create_files {directory server} {
 
     }
 
-    cd "f000"
+    cd f000
 
     if { [catch {set result [exec {*}[eval list {echo a > a.txt}]]} reason] } {
 

@@ -4,6 +4,26 @@ proc create_directories {directory} {
 
     cd $directory
 
+    if { [catch {set result  [exec {*}[eval list {pwd}]]} reason] } {
+
+    puts "Failed execution: $reason"
+
+    } else {
+
+    puts $result
+
+    }
+
+    if { [catch {set result  [exec {*}[eval list {ls}]]} reason] } {
+
+    puts "Failed execution: $reason"
+
+    } else {
+
+    puts $result
+
+    }
+
     set test_args {{mkdir "f"}
         {mkdir "f0"}
         {mkdir "f00"}
@@ -20,10 +40,7 @@ proc create_directories {directory} {
     foreach test $test_args {
         puts "Executing: $test"
 
-        expect \
-            "$server" { send "$test\r" }
-
-        if { [catch {set result [exec ]} reason] } {
+        if { [catch {set result  [exec {*}[eval list $test]]} reason] } {
 
         puts "Failed execution: $reason"
 
@@ -33,5 +50,34 @@ proc create_directories {directory} {
 
         }
     }
+
+# should return error
+    puts "\nExecuting: make subdir 'f0' in dir 'f00'\n"
+
+    cd f00
+
+    if { [catch {set result [exec {*}[eval list {mkdir "f0"}]]} reason] } {
+
+    puts "Failed execution: $reason"
+
+    } else {
+
+    puts $result
+
+    }
+
+    if { [catch {set result [exec {*}[eval list {ls}]]} reason] } {
+
+    puts "Failed execution: $reason"
+
+    } else {
+
+    puts $result
+
+    }
+
+    cd {..}
+
+    cd {..}
 
 }
