@@ -629,7 +629,7 @@ static int cs1550_readdir(const char *path,
     filler(buf, "..", NULL, 0);
 
     if (strcmp(path, "/") == 0) {
-        // todo: need to work on this because it is reading all directories. I just want the current directory
+        // todo: ineffeicient way to read. need to work on this because it is reading all directories. I just want the current directory
         int i;
         for (i = 0; i < bitmapFileHeader->nDirectories; ++i) {
             //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
@@ -937,16 +937,11 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
         stat(path, &st);
         print_debug(("file size of '%s': %ld\n", path, (long) st.st_size));
 
-        // todo: get proper file size; note that this seems to be given to the write call
-//        entry->files[m].fsize = (size_t) st.st_size;
-//        entry->files[m].nStartBlock = get_free_block(disk->bitmap);
+        // get proper file size; note that this seems to be given to the write call
         // will try to do this stuff when I write to the file for the first time.
 
         entry->files[m].fsize = 0;
-//        print_debug(("file size of '%s': %ld\n", path, (long) entry->files[m].fsize));
-//
-        entry->files[m].nStartBlock = 0; // set to invalid address
-//        set_bit_map((int) entry->files[m].nStartBlock, (int) entry->files[m].fsize, 1, disk->bitmap);
+        entry->files[m].nStartBlock = 0;
 
         write_to_disk(disk);
         dirty = false;
@@ -1028,12 +1023,10 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
 
             if (strcmp(bitmapFileHeader->directories[i].dname, dir_name) == 0) {
 
-                // get the cs1550_directory_entry
+                // entry is a pointer to the subdirectory
                 entry = (cs1550_directory_entry *) &disk->blocks[bitmapFileHeader->directories[i].nStartBlock];
 
                 print_debug(("entry->nFiles : %d\n", entry->nFiles));
-
-                int found_file = false;
 
                 int m;
                 for (m = 0; m < entry->nFiles; ++m) {
@@ -1046,39 +1039,31 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
 
                     if (strcmp(entry->files[m].fname, file_name) == 0 &&
                         strcmp(entry->files[m].fext, extension_name) == 0) {
-                        found_file = true;
+
+                        print_debug(("Reading file\n"));
+                        print_debug(("file_name: %s\n", entry->files[m].fname));
+                        print_debug(("extension_name: %s\n", entry->files[m].fext));
+
+
+                        int fd;
+                        (void) fi;
+
+                        // need to read from disk
+                        fd = open(".disk", O_RDONLY);
+                        if (fd == -1) {
+                            result = -EBADF;
+                        }
+
+                        if (result == 0) {
+                            result = (int) pread(fd, buf, size, entry->files[m].nStartBlock);
+                        }
+
+                        close(fd);
+
                         break;
                     }
                 }
-
-                // create file;
-                if (found_file == true) {
-                    assert(entry != NULL);
-
-                    print_debug(("Reading file\n"));
-                    print_debug(("file_name: %s\n", entry->files[m].fname));
-                    print_debug(("extension_name: %s\n", entry->files[m].fext));
-
-                    // m is the current position in the directory structure for me to store the file
-                    // entry is a pointer to the subdirectory
-
-                    int fd;
-                    (void) fi;
-
-                    // need to read from disk
-                    fd = open(".disk", O_RDONLY);
-                    if (fd == -1) {
-                        result = -EBADF;
-                    }
-
-                    if (result == 0) {
-                        result = (int) pread(fd, buf, size, entry->files[m].nStartBlock);
-                    }
-
-                    close(fd);
-
-                    break;
-                }
+                break;
             }
         }
     }
@@ -1159,6 +1144,8 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
                     print_debug(("extension_name: %s\n", entry->files[m].fext));
 
                     if (entry->files[m].nStartBlock == 0) {
+
+                        // todo: need to check that there is room left on the disk
                         dirty = true;
                         entry->files[m].nStartBlock = get_free_block(disk->bitmap);
                         entry->files[m].fsize = size;
