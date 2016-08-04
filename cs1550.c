@@ -1153,7 +1153,7 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
 
                     /* Finished with dealing with writing to information blocks*/
 
-                    if ((offset + 1) + size >= entry->files[m].fsize) {
+                    if (offset + size >= entry->files[m].fsize) {
                         result = -EFBIG;
                     } else {
                         int fd;
