@@ -7,7 +7,7 @@
 
     Edited by Betsalel "Saul" Williamson
     saul.williamson@pitt.edu
-    Last edited: Jul 27, 2016 11:22 PM
+    Last edited: Aug 3, 2016 10:44 PM
 
 */
 
@@ -21,9 +21,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
-//#include <string.h>
-//#include <pthread.h>
-//#include <tclDecls.h>
 
 #ifndef _DEBUG
 #define _DEBUG
@@ -58,14 +55,12 @@ long get_free_block(char *bitmap);
  *
  * @param offset the offset from the start of the bitmap
  * @param length the length of the bits to set
- * @param value the value to set. usually 1
+ * @param value the value to set. usually 1.
  * @param bitmap pointer to a bitmap
  */
 void set_bit_map(long offset, long length, char value, char *bitmap);
 
 void print_bit_map(int offset, int length, char *bitmap);
-
-void trim_path(const char *src, char *dest);
 
 /**
  *
@@ -78,11 +73,11 @@ void substring(const char *src, char **dest, int start_position, int length);
 
 /**
  *
- * @param path
- * @param dir_name
- * @param full_file_name
- * @param file_name
- * @param extension_name
+ * @param path the full path information
+ * @param dir_name a pointer to a pointer
+ * @param full_file_name a pointer to a pointer
+ * @param file_name a pointer to a pointer
+ * @param extension_name a pointer to a pointer
  * @return:     0 on success
  *      -ENAMETOOLONG if the name is beyond 8.3 chars
  *      -EPERM if the file is trying to be created in the root dir
@@ -91,6 +86,14 @@ void substring(const char *src, char **dest, int start_position, int length);
 int get_path_info_for_mknod(const char *path, char **dir_name, char **full_file_name, char **file_name,
                             char **extension_name);
 
+/**
+ *
+ * @param path the full path information
+ * @param dir_name a pointer to a pointer
+ * @param full_file_name a pointer to a pointer, is empty string if no file
+ * @param file_name a pointer to a pointer, is empty string if no file
+ * @param extension_name a pointer to a pointer, is empty string if no file
+ */
 void get_path_info(const char *path, char **dir_name, char **full_file_name, char **file_name,
                    char **extension_name);
 
@@ -176,15 +179,13 @@ typedef struct Singleton *singleton;
 
 struct Singleton *get_instance(void);
 
-//pthread_mutex_t instance_mutex = PTHREAD_MUTEX_INITIALIZER;;
-
-void trim_path(const char *src, char *dest) {
-    const size_t str_length = strlen(src);
-    memcpy(dest, &src[1], str_length);
-    dest[str_length - 1] = '\0';
-}
-
 /**
+ *
+ * By using a singleton to wrap our disk access we can be sure that we are accessing the most up-to-date information.
+ *
+ * Every time we read we check first to see that we don't need to write by using a global 'dirty' flag.
+ *
+ * Upon the init the disk is asserted to not be dirty.
  *
  * @return pointer to singleton
  */
@@ -210,7 +211,7 @@ struct Singleton *get_instance(void) {
         }
 
         fread(instance->d, sizeof(struct cs1550_disk), 1, filePtr);
-        print_debug(("Closed disk create instance\n"));
+        print_debug(("Closed disk for read in get_instance\n"));
         fclose(filePtr);
 
         // todo: implement variable size disk
@@ -257,7 +258,7 @@ struct Singleton *get_instance(void) {
         }
 
         fread(instance->d, sizeof(struct cs1550_disk), 1, filePtr);
-        print_debug(("Closed disk access instance\n"));
+        print_debug(("Closed disk for read in get_instance\n"));
         fclose(filePtr);
     }
 
@@ -390,13 +391,14 @@ void get_path_info(const char *path, char **dir_name, char **full_file_name, cha
     int path_index = 0;
     int dot_index = 0;
     int num_slash = 0;
-    int in_dir = 0;
-    int in_file = 0;
+    int in_dir = false;
+    int in_file = false;
+
     int i;
     for (i = 0; i < strlen(path); i++) {
         if (path[i] == '/') {
-            in_dir = 1;
-            in_file = 0;
+            in_dir = true;
+            in_file = false;
 
             num_slash++;
             path_index = i;
@@ -410,8 +412,8 @@ void get_path_info(const char *path, char **dir_name, char **full_file_name, cha
             }
         } else if (path[i] == '.') {
             dot_index = i;
-            in_dir = 0;
-            in_file = 1;
+            in_dir = false;
+            in_file = true;
             if (num_slash == 1) {
                 // error with file name
             }
@@ -426,7 +428,6 @@ void get_path_info(const char *path, char **dir_name, char **full_file_name, cha
                 strcpy(*extension_name, "");
             } else if (in_file) {
                 substring(path, full_file_name, path_index + 1, (int) ((strlen(path) - 1) - path_index));
-
                 substring(path, file_name, path_index + 1, (dot_index - 1) - path_index);
                 substring(path, extension_name, dot_index + 1, (int) ((strlen(path) - 1) - dot_index));
             } else {
@@ -499,7 +500,7 @@ static int cs1550_getattr(const char *path, struct stat *stbuf) {
         }
 
         /*
-         * todo: this business logic is convoluted would do better to have 1) root, 2) subdir 3) subdir-subdir
+         * todo: this business logic is convoluted would do better to have a switch statement with 1) root, 2) subdir 3) subdir-subdir
          */
         // we have tried to create a file in a subdirectory of a subdirectory
         if ((strlen(file_name) == 0) && slash_count >= 2) {
@@ -638,20 +639,12 @@ static int cs1550_readdir(const char *path,
         // todo: ineffeicient way to read. need to work on this because it is reading all directories. I just want the current directory
         int i;
         for (i = 0; i < bitmapFileHeader->nDirectories; ++i) {
-            //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
-
-//            print_debug(("directory name %s\n", bitmapFileHeader->directories[i].dname));
-//            print_debug(("nStartBlock %ld\n", bitmapFileHeader->directories[i].nStartBlock));
             filler(buf, bitmapFileHeader->directories[i].dname, NULL, 0);
         }
     } else {
-        // to get this working for /** and /**/**
-        // this assumes that there are no sub-directories
+
         int i;
         for (i = 0; i < bitmapFileHeader->nDirectories; ++i) {
-            //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
-
-//            filler(buf, bitmapFileHeader->directories[i].dname, NULL, 0);
 
             if (strcmp(bitmapFileHeader->directories[i].dname, dir_name) == 0) {
                 print_debug(("I'm in this directory %s\n", dir_name));
@@ -679,30 +672,9 @@ static int cs1550_readdir(const char *path,
 
                     filler(buf, buff_full_file_name, NULL, 0);
                 }
-                // for nFiles list
-//                break;
             }
         }
     }
-
-    //the filler function allows us to add entries to the listing
-    //read the fuse.h file for a description (in the ../include dir)
-
-///** Function to add an entry in a readdir() operation
-// *
-// * @param buf the buffer passed to the readdir() operation
-// * @param name the file name of the directory entry
-// * @param stat file attributes, can be NULL
-// * @param off offset of the next entry or zero
-// * @return 1 if buffer is full, zero otherwise
-// */
-//    typedef int (*fuse_fill_dir_t)(void *buf, const char *name, const struct stat *stbuf, off_t off);
-
-    /*
-    //add the user stuff (subdirs or files)
-    //the +1 skips the leading '/' on the filenames
-    filler(buf, newpath + 1, NULL, 0);
-    */
 
     return 0;
 }
@@ -724,14 +696,14 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
 
     // get name
     int result = 0;
-    int i;
     int slash_count = 0;
     int letter_count = 0;
     const size_t str_length = strlen(path);
 
     // start at one before the '\0'
+    int i;
     for (i = (int) str_length - 1; i >= 0; --i) {
-//        print_debug(("Found '%c'\n", path[i]));
+
         // if name is too long
         if (letter_count > 8) {
             result = -ENAMETOOLONG;
@@ -754,7 +726,6 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
     // if directory is not under the root directory
     // this means that the path information is off
 
-
     if (result == 0) {
 
         // minus 1 for '\0' minus 1 for '/' path character
@@ -771,7 +742,6 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
         // if the directory exists
         int j;
         for (j = 0; j < bitmapFileHeader->nDirectories; ++j) {
-            //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
 
             if (strcmp(bitmapFileHeader->directories[j].dname, file_name) == 0) {
                 result = -EEXIST;
@@ -789,50 +759,27 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
 
             // loop through array
             // we are adding a new directory therefor we can write directly to the end
-//            print_debug(("file_name %s\n", file_name));
             strcpy(bitmapFileHeader->directories[bitmapFileHeader->nDirectories].dname, file_name);
-            //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
-
-//            print_debug(("dname %s\n", bitmapFileHeader->directories[bitmapFileHeader->nDirectories].dname));
-
-//            print_debug(("nStartBlock %ld\n", bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock));
 
             long start_block = get_free_block(disk->bitmap);
 
             bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock = start_block;
-            //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
-
-
-//            print_debug(("Setting bitmap\n"));
             set_bit_map((int) start_block, sizeof(struct cs1550_directory_entry), 1, disk->bitmap);
 
-//            print_bit_map(0, start_block + sizeof(struct cs1550_directory_entry), disk->bitmap);
-
-            // will increment the number of directories
-
-            //        print_debug(("Setting address %ld\n", bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock));
-
             long address = bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock;
-            //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
-
             assert(address < sizeof(cs1550_disk_block) * NUMBER_OF_BLOCKS);
+
             cs1550_directory_entry *new_entry = (cs1550_directory_entry *) &disk->blocks[address];
 
             new_entry->nFiles = 0;
 
-            // this is off. I have a bunch of pointers to memory of size char
-            // if I start at location 0 I have the root
-            // then after the root there was a size of 512
-
             bitmapFileHeader->nDirectories++;
-            //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
 
             write_to_disk(disk);
             dirty = false;
         }
     }
 
-    print_debug(("Before cs1550_mkdir returning result\n"));
     return result;
 }
 
@@ -860,6 +807,9 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
 
     print_debug(("I'm in mknod path = %s\n", path));
 
+    (void) mode;
+    (void) dev;
+
     // get name
     int result = 0;
 
@@ -875,7 +825,6 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
     print_debug(("file_name = %s\n", file_name));
     print_debug(("extension_name = %s\n", extension_name));
 
-    // attempt to create file
     cs1550_directory_entry *entry = NULL;
     cs1550_disk *disk = get_instance()->d;
     struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
@@ -892,10 +841,6 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
         int found_dir = false;
         int l;
         for (l = 0; l < bitmapFileHeader->nDirectories; ++l) {
-            //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
-
-//            print_debug(("I'm testing this directory %s\n", dir_name));
-//            print_debug(("Against this directory %s\n", bitmapFileHeader->directories[l].dname));
 
             if (strcmp(bitmapFileHeader->directories[l].dname, dir_name) == 0) {
                 // i found the directory
@@ -932,10 +877,6 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
     // create file;
     if (result == 0) {
 
-        // todo: see if I need to check in mknod that file will fit
-//        if (get_free_block(disk->bitmap) > SIZE_OF_DISK) {
-//            result = -EFBIG;
-//        } else {
         dirty = true;
         assert(entry != NULL);
 
@@ -960,9 +901,6 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
         write_to_disk(disk);
         dirty = false;
     }
-
-    (void) mode;
-    (void) dev;
 
     free(dir_name);
     free(file_name);
@@ -991,22 +929,11 @@ static int cs1550_unlink(const char *path) {
  */
 static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
                        struct fuse_file_info *fi) {
+
     print_debug(
             ("I'm in cs1550_read: size = %ld offset = %ld\npath = %s\nbuffer = %s\n", size, (long) offset, path, buf));
 
-    int result = 0;
-    char *dir_name;
-    char *full_file_name;
-    char *file_name;
-    char *extension_name;
-
-    get_path_info(path, &dir_name, &full_file_name, &file_name, &extension_name);
-
-    if (strlen(full_file_name) == 0) {
-        result = -EISDIR;
-    }
-
-////    This function should read the data in the file denoted by path into buf, starting at offset.
+    ////    This function should read the data in the file denoted by path into buf, starting at offset.
 //    (void) buf;
 //    (void) offset;
     (void) fi;
@@ -1022,6 +949,18 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
 //
 //    return (int) size;
 
+    int result = 0;
+    char *dir_name;
+    char *full_file_name;
+    char *file_name;
+    char *extension_name;
+
+    get_path_info(path, &dir_name, &full_file_name, &file_name, &extension_name);
+
+    if (strlen(full_file_name) == 0) {
+        result = -EISDIR;
+    }
+
     if (result == 0) {
 
         cs1550_directory_entry *entry = NULL;
@@ -1032,26 +971,21 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
 
         int i;
         for (i = 0; i < bitmapFileHeader->nDirectories; ++i) {
-            print_debug(
-                    ("bitmap %s dir_name %s result %d\n", bitmapFileHeader->directories[i].dname, dir_name, strcmp(
-                            bitmapFileHeader->directories[i].dname, dir_name)));
 
             if (strcmp(bitmapFileHeader->directories[i].dname, dir_name) == 0) {
 
                 // entry is a pointer to the subdirectory
+
                 assert(bitmapFileHeader->directories[i].nStartBlock < sizeof(cs1550_disk_block) * NUMBER_OF_BLOCKS);
                 entry = (cs1550_directory_entry *) &disk->blocks[bitmapFileHeader->directories[i].nStartBlock];
 
+                print_debug(
+                        ("bitmap %s dir_name %s result %d\n", bitmapFileHeader->directories[i].dname, dir_name, strcmp(
+                                bitmapFileHeader->directories[i].dname, dir_name)));
                 print_debug(("entry->nFiles : %d\n", entry->nFiles));
 
                 int m;
                 for (m = 0; m < entry->nFiles; ++m) {
-                    print_debug(
-                            ("entry %s file_name %s result %d\n", entry->files[m].fname, file_name,
-                                    strcmp(entry->files[m].fname, file_name)));
-                    print_debug(
-                            ("entry %s extension_name %s result %d\n", entry->files[m].fext, extension_name,
-                                    strcmp(entry->files[m].fext, extension_name)));
 
                     if (strcmp(entry->files[m].fname, file_name) == 0 &&
                         strcmp(entry->files[m].fext, extension_name) == 0) {
@@ -1097,22 +1031,15 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
  *
  * @return: size on success
  *      -EFBIG if the offset is beyond the file size (but handle appends)
+ *          // it was ambiguous on how to handle appends.
+ *          // assume that append means writing to a location within the bounds of the initial file size
  */
 static int cs1550_write(const char *path, const char *buf, size_t size,
                         off_t offset, struct fuse_file_info *fi) {
     print_debug(
             ("I'm in cs1550_write: size = %ld offset = %ld\npath = %s\nbuffer = %s\n", size, (long) offset, path, buf));
 
-    int result = 0;
-
-    char *dir_name;
-    char *full_file_name;
-    char *file_name;
-    char *extension_name;
-
-    get_path_info(path, &dir_name, &full_file_name, &file_name, &extension_name);
-
-////    This function should write the data in buf into the file denoted by path, starting at offset.
+    ////    This function should write the data in buf into the file denoted by path, starting at offset.
 //    (void) buf;
 //    (void) offset;
     (void) fi;
@@ -1126,6 +1053,15 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
 //
 //    return (int) size;
 
+    int result = 0;
+
+    char *dir_name;
+    char *full_file_name;
+    char *file_name;
+    char *extension_name;
+
+    get_path_info(path, &dir_name, &full_file_name, &file_name, &extension_name);
+
     cs1550_directory_entry *entry = NULL;
     cs1550_disk *disk = get_instance()->d;
     struct cs1550_root_directory *bitmapFileHeader = (struct cs1550_root_directory *) &disk->blocks[0];
@@ -1135,9 +1071,7 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
     int i;
     for (i = 0; i < bitmapFileHeader->nDirectories; ++i) {
         //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
-        print_debug(
-                ("bitmap %s dir_name %s result %d\n", bitmapFileHeader->directories[i].dname, dir_name, strcmp(
-                        bitmapFileHeader->directories[i].dname, dir_name)));
+
 
         if (strcmp(bitmapFileHeader->directories[i].dname, dir_name) == 0) {
 
@@ -1145,16 +1079,13 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
             assert(bitmapFileHeader->directories[i].nStartBlock < sizeof(cs1550_disk_block) * NUMBER_OF_BLOCKS);
             entry = (cs1550_directory_entry *) &disk->blocks[bitmapFileHeader->directories[i].nStartBlock];
 
+            print_debug(
+                    ("bitmap %s dir_name %s result %d\n", bitmapFileHeader->directories[i].dname, dir_name, strcmp(
+                            bitmapFileHeader->directories[i].dname, dir_name)));
             print_debug(("entry->nFiles : %d\n", entry->nFiles));
 
             int m;
             for (m = 0; m < entry->nFiles; ++m) {
-                print_debug(
-                        ("entry %s file_name %s result %d\n", entry->files[m].fname, file_name,
-                                strcmp(entry->files[m].fname, file_name)));
-                print_debug(
-                        ("entry %s extension_name %s result %d\n", entry->files[m].fext, extension_name,
-                                strcmp(entry->files[m].fext, extension_name)));
 
                 // m is the current position in the directory structure for me to store the file
                 if (strcmp(entry->files[m].fname, file_name) == 0 &&
@@ -1183,8 +1114,7 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
                         }
                     }
 
-
-                    /* Finished with dealing with writing to information blocks*/
+                    /* Finished with dealing with writing to information blocks */
 
                     if (offset + size > entry->files[m].fsize) {
                         result = -EFBIG;
