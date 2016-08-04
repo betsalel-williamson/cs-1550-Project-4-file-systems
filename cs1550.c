@@ -850,6 +850,11 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
                 assert(bitmapFileHeader->directories[l].nStartBlock < sizeof(cs1550_disk_block) * NUMBER_OF_BLOCKS);
                 entry = (cs1550_directory_entry *) &disk->blocks[bitmapFileHeader->directories[l].nStartBlock];
 
+                if (entry->nFiles == MAX_FILES_IN_DIR) {
+                    result = -EPERM;
+                    break;
+                }
+
                 for (m = 0; m < entry->nFiles; ++m) {
                     if (strcmp(entry->files[m].fname, file_name) == 0 &&
                         strcmp(entry->files[m].fext, extension_name) == 0) {
