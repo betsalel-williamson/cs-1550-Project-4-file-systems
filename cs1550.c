@@ -1011,6 +1011,7 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
                         if (result == 0) {
                             result = (int) pread(fd, buf, size, entry->files[m].nStartBlock);
                             print_debug(("result after pread = %d\n", result));
+                            print_debug(("result after buf = %s\n", buf));
                         }
 
                         if (result >= 0) {
@@ -1135,7 +1136,7 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
                         if (result == 0) {
                             result = (int) pwrite(fd, buf, size, entry->files[m].nStartBlock + offset);
                             print_debug(("result after pwrite = %d\n", result));
-
+                            print_debug(("result after buf = %s\n", buf));
                         }
 
                         if (result >= 0) {
