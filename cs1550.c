@@ -1009,7 +1009,7 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
                         }
 
                         if (result == 0) {
-                            result = (int) pread(fd, buf, size, entry->files[m].nStartBlock);
+                            result = (int) pread(fd, buf, entry->files[m].fsize, entry->files[m].nStartBlock);
                             print_debug(("result after pread = %d\n", result));
                             print_debug(("result after buf = %s\n", buf));
                         }
