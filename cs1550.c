@@ -202,10 +202,6 @@ struct Singleton *get_instance(void) {
         instance->d = (cs1550_disk *) calloc(1, sizeof(struct cs1550_disk));
 
         assert(dirty == false);
-//        if(dirty == true) {
-//            write_to_disk(instance->d);
-//            dirty = ;
-//        }
 
         print_debug(("Opening disk for read\n"));
         FILE *filePtr = fopen(".disk", "rb");
@@ -223,7 +219,7 @@ struct Singleton *get_instance(void) {
         stat(".disk", &st);
         off_t size = st.st_size;
         print_debug(("disk size: %ld\n", (long) size));
-        print_debug(("size of struct: %ld\n", sizeof(struct cs1550_disk)));
+        print_debug(("size of struct cs1550_disk: %ld\n", sizeof(struct cs1550_disk)));
         print_debug(("max directories = %ld\n", MAX_DIRS_IN_ROOT));
         print_debug(("max files in dir = %ld\n", MAX_FILES_IN_DIR));
 
@@ -1198,6 +1194,10 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
 
                         if (result == 0) {
                             result = (int) pwrite(fd, buf, size, entry->files[m].nStartBlock + offset);
+                        }
+
+                        if (result == 0) {
+                            result = (int) size;
                         }
 
                         close(fd);
