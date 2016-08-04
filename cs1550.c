@@ -1015,7 +1015,7 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
                         }
 
                         if (result >= 0) {
-                            result = (int) size;
+                            result = (int) entry->files[m].fsize;
                             print_debug(("size = %d\n", result));
                         }
 
