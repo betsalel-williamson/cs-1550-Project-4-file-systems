@@ -317,7 +317,8 @@ long get_free_block(char *bitmap) {
     int i;
 
     // seek until I find the first free bit
-    for (i = 0; i < BIT_MAP_SIZE; ++i) {
+    // reserve the first block for root
+    for (i = sizeof(struct cs1550_root_directory) - 1; i < BIT_MAP_SIZE; ++i) {
 
         if ((bitmap[i / 8] & (1 << (i % 8))) == 0) {
             print_debug(("Free block at: %d\n", i));
