@@ -1052,6 +1052,7 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
 
                         if (result == 0) {
                             result = (int) pread(fd, buf, size, entry->files[m].nStartBlock);
+                            print_debug(("buf = %s\n", buf));
                         }
 
                         close(fd);
@@ -1135,12 +1136,12 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
 
 
                     print_debug(("Writing to file\n"));
-
                     print_debug(("file_name: %s\n", entry->files[m].fname));
                     print_debug(("extension_name: %s\n", entry->files[m].fext));
 
                     if (entry->files[m].nStartBlock == 0) {
 
+                        print_debug(("First time writing to file\n"));
                         // todo: need to check that there is room left on the disk
                         dirty = true;
                         entry->files[m].nStartBlock = get_free_block(disk->bitmap);
