@@ -225,7 +225,7 @@ struct Singleton *get_instance(void) {
         print_debug(("disk size: %ld\n", (long) size));
         print_debug(("size of struct: %ld\n", sizeof(struct cs1550_disk)));
         print_debug(("max directories = %ld\n", MAX_DIRS_IN_ROOT));
-        print_debug(("max files in dir = %ld", MAX_FILES_IN_DIR));
+        print_debug(("max files in dir = %ld\n", MAX_FILES_IN_DIR));
 
 //        // get map for disk
 //        instance->d = (cs1550_disk *) calloc(1, (size_t) size);
