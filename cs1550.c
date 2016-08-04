@@ -515,7 +515,8 @@ static int cs1550_getattr(const char *path, struct stat *stbuf) {
             // if the directory exists
             int i;
             for (i = 0; i < bitmapFileHeader->nDirectories; ++i) {
-                assert(bitmapFileHeader->directories[i].nStartBlock < NUMBER_OF_BLOCKS);
+
+                assert(bitmapFileHeader->directories[i].nStartBlock < sizeof(cs1550_disk_block) * NUMBER_OF_BLOCKS);
                 cs1550_directory_entry *entry = (cs1550_directory_entry *) &disk->blocks[bitmapFileHeader->directories[i].nStartBlock];
                 print_debug(("\n\nNumber of files %d\n\n", entry->nFiles));
                 print_debug(
@@ -545,7 +546,7 @@ static int cs1550_getattr(const char *path, struct stat *stbuf) {
                 if (strcmp(bitmapFileHeader->directories[i].dname, dir_name) == 0) {
 
                     // get the cs1550_directory_entry
-                    assert(bitmapFileHeader->directories[i].nStartBlock < NUMBER_OF_BLOCKS);
+                    assert(bitmapFileHeader->directories[i].nStartBlock < sizeof(cs1550_disk_block) * NUMBER_OF_BLOCKS);
                     cs1550_directory_entry *entry = (cs1550_directory_entry *) &disk->blocks[bitmapFileHeader->directories[i].nStartBlock];
 
                     print_debug(("entry->nFiles : %d\n", entry->nFiles));
@@ -660,7 +661,7 @@ static int cs1550_readdir(const char *path,
                 print_debug(("I'm in this directory %s\n", dir_name));
 
                 // get the cs1550_directory_entry
-                assert(bitmapFileHeader->directories[i].nStartBlock < NUMBER_OF_BLOCKS);
+                assert(bitmapFileHeader->directories[i].nStartBlock < sizeof(cs1550_disk_block) * NUMBER_OF_BLOCKS);
                 cs1550_directory_entry *entry = (cs1550_directory_entry *) &disk->blocks[bitmapFileHeader->directories[i].nStartBlock];
                 print_debug(("Number of entries directory %d\n", entry->nFiles));
 
@@ -905,7 +906,7 @@ static int cs1550_mknod(const char *path, mode_t mode, dev_t dev) {
                 found_dir = true;
 
                 // get the cs1550_directory_entry
-                assert(bitmapFileHeader->directories[l].nStartBlock < NUMBER_OF_BLOCKS);
+                assert(bitmapFileHeader->directories[l].nStartBlock < sizeof(cs1550_disk_block) * NUMBER_OF_BLOCKS);
                 entry = (cs1550_directory_entry *) &disk->blocks[bitmapFileHeader->directories[l].nStartBlock];
 
                 for (m = 0; m < entry->nFiles; ++m) {
@@ -1042,7 +1043,7 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
             if (strcmp(bitmapFileHeader->directories[i].dname, dir_name) == 0) {
 
                 // entry is a pointer to the subdirectory
-                assert(bitmapFileHeader->directories[i].nStartBlock < NUMBER_OF_BLOCKS);
+                assert(bitmapFileHeader->directories[i].nStartBlock < sizeof(cs1550_disk_block) * NUMBER_OF_BLOCKS);
                 entry = (cs1550_directory_entry *) &disk->blocks[bitmapFileHeader->directories[i].nStartBlock];
 
                 print_debug(("entry->nFiles : %d\n", entry->nFiles));
@@ -1140,7 +1141,7 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
         if (strcmp(bitmapFileHeader->directories[i].dname, dir_name) == 0) {
 
             // entry is a pointer to the subdirectory
-            assert(bitmapFileHeader->directories[i].nStartBlock < NUMBER_OF_BLOCKS);
+            assert(bitmapFileHeader->directories[i].nStartBlock < sizeof(cs1550_disk_block) * NUMBER_OF_BLOCKS);
             entry = (cs1550_directory_entry *) &disk->blocks[bitmapFileHeader->directories[i].nStartBlock];
 
             print_debug(("entry->nFiles : %d\n", entry->nFiles));
