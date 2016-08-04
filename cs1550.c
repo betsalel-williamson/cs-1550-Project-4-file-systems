@@ -205,11 +205,11 @@ struct Singleton *get_instance(void) {
 
         // todo: implement variable size disk
 //        // get disk size
-//        struct stat st;
-//        stat(".disk", &st);
-//        off_t size = st.st_size;
-//        print_debug(("disk size: %ld\n", (long) size));
-//        print_debug(("size of struct: %ld\n", sizeof(struct cs1550_disk)));
+        struct stat st;
+        stat(".disk", &st);
+        off_t size = st.st_size;
+        print_debug(("disk size: %ld\n", (long) size));
+        print_debug(("size of struct: %ld\n", sizeof(struct cs1550_disk)));
 //        // get map for disk
 //        instance->d = (cs1550_disk *) calloc(1, (size_t) size);
 //
