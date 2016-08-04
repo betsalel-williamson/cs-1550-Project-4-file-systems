@@ -818,7 +818,7 @@ static int cs1550_mkdir(const char *path, mode_t mode) {
             long address = bitmapFileHeader->directories[bitmapFileHeader->nDirectories].nStartBlock;
             //    print_debug(("\n\nnDirectories %d\n\n", bitmapFileHeader->nDirectories));
 
-            assert(address < NUMBER_OF_BLOCKS);
+            assert(address < sizeof(cs1550_disk_block) * NUMBER_OF_BLOCKS);
             cs1550_directory_entry *new_entry = (cs1550_directory_entry *) &disk->blocks[address];
 
             new_entry->nFiles = 0;
