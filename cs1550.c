@@ -453,7 +453,7 @@ void substring(const char *src, char **dest, int start_position, int length) {
  *      -ENOENT if the file is not found
  */
 static int cs1550_getattr(const char *path, struct stat *stbuf) {
-    print_debug(("Inside get attribute path = %s\n", path));
+    print_debug(("Inside cs1550_getattr = %s\n", path));
 
     //default return that path doesn't exist
     int result = -ENOENT;
@@ -501,7 +501,7 @@ static int cs1550_getattr(const char *path, struct stat *stbuf) {
          * todo: this business logic is convoluted would do better to have 1) root, 2) subdir 3) subdir-subdir
          */
         // we have tried to create a file in a subdirectory of a subdirectory
-        if ((strlen(file_name) == 0) && slash_count > 2) {
+        if ((strlen(file_name) == 0) && slash_count >= 2) {
             // result does not exist
         } else if (strlen(full_file_name) == 0) {  // if in single sub dir
             print_debug(("In get_path_info_for_getattr for dir\n"));
