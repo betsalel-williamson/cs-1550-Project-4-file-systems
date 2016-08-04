@@ -314,17 +314,19 @@ int write_to_disk(cs1550_disk *disk) {
 // could cache results and return things if I update this when I write out information
 long get_free_block(char *bitmap) {
 
-    int i;
+    print_debug(("Getting free block starting index at: %d", sizeof(struct cs1550_root_directory) - 1));
+    int i = sizeof(struct cs1550_root_directory) - 1;
 
     // seek until I find the first free bit
     // reserve the first block for root
-    for (i = sizeof(struct cs1550_root_directory) - 1; i < BIT_MAP_SIZE; ++i) {
+    for (; i < BIT_MAP_SIZE; ++i) {
 
         if ((bitmap[i / 8] & (1 << (i % 8))) == 0) {
             print_debug(("Free block at: %d\n", i));
             break;
         }
     }
+
 
     return i;
 }
