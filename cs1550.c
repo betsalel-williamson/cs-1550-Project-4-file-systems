@@ -1074,7 +1074,7 @@ static int cs1550_read(const char *path, char *buf, size_t size, off_t offset,
                             print_debug(("result after pread = %d\n", result));
                         }
 
-                        if (result == 0) {
+                        if (result >= 0) {
                             result = (int) size;
                             print_debug(("size = %d\n", result));
                         }
@@ -1203,7 +1203,7 @@ static int cs1550_write(const char *path, const char *buf, size_t size,
 
                         }
 
-                        if (result == 0) {
+                        if (result >= 0) {
                             result = (int) size;
                             print_debug(("size = %d\n", result));
                         }
