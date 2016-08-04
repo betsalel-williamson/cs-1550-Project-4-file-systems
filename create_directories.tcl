@@ -96,9 +96,9 @@ proc create_directories {directory} {
     }
 
 # should return error
-    puts "\nExecuting: make subdir 'f0' in dir 'f00'\n"
+    puts "\nExecuting: make subdir 'f0' in dir 'f30'\n"
 
-    cd f00
+    cd "f30"
 
     if { [catch {set result [exec {*}[eval list {mkdir "f0"}]]} reason] } {
 
